@@ -81,11 +81,15 @@ public class Peripheral extends BluetoothGattCallback {
 			BluetoothDevice device = getDevice();
 			this.connectCallback = callback;
 			gatt = device.connectGatt(activity, false, this);
-		}else{
+		} else {
 			if (gatt != null) {
 				callback.invoke();
-			} else
-				callback.invoke("BluetoothGatt is null");
+			} else {
+				// when we use createBond before, the actual state might be connected,
+				// but we still need to retrieve BluetoothGatt object
+				gatt = device.connectGatt(activity, false, this);
+				callback.invoke();
+			}
 		}
 	}
 
