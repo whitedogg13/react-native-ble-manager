@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     StatusBar,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native'
 
 const Theme = {
@@ -22,9 +23,7 @@ class NavBar extends Component {
                 paddingTop: Theme.navbarPaddingTop, paddingLeft: 8, paddingRight: 8,
                 backgroundColor: Theme.color, flexDirection: 'row', alignItems: 'center'
             }}>
-                {
-                    this.props.children
-                }
+                { this.props.children }
             </View>
         )
     }
@@ -100,13 +99,41 @@ class ConnectionPanel extends Component {
     }
 }
 
+const UiState = {
+    idle: 0,
+    scanning: 1
+}
+
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            connect: false
+            connect: false,
+            peripherals: {},
+            uiState: UiState.idle,
         };
     }
+
+    /*
+    componentDidMount() {
+        this._handleDiscovery = bleManagerEmitter.addListener(
+            'BleManagerDiscoverPeripheral',
+            peripheral => {
+                let { peripherals } = this.state;
+                this.setState({
+                    peripherals: {
+                        ...peripherals,
+                        [peripheral.id]: peripheral
+                    }
+                })
+            }
+        );
+    }
+
+    componentWillUnmount() {
+        this._handleDiscovery.remove();
+    }
+    */
 
     render() {
         let {connect} = this.state;
@@ -116,11 +143,8 @@ class App extends Component {
                 <StatusBar barStyle="light-content"/>
 
                 <NavBar>
-                    <Text style={{color: 'white', width: 100, textAlign: 'left'}}>Left</Text>
-                    <TouchableOpacity style={{flex: 1}}>
-                        <Text style={{color: 'white', textAlign: 'center'}}>BLE Manager</Text>
-                    </TouchableOpacity>
-                    <Text style={{color: 'white', width: 100, textAlign: 'right'}}>Right</Text>
+                    <Text style={{color: 'white', fontSize: 20, width: 100, textAlign: 'left', flex: 1}}>ReactNative BLE Manager</Text>
+                    { this._renderScanButton() }
                 </NavBar>
 
                 <ScrollView style={{flex: 1}} contentContainerStyle={{alignItems: 'stretch'}}>
@@ -137,6 +161,28 @@ class App extends Component {
                 }
             </View>
         )
+    }
+
+    _renderScanButton = () => {
+        let {uiState} = this.state;
+        if (uiState === UiState.scanning) {
+            return <ActivityIndicator color='white'/>
+        }
+        return (
+            <TouchableOpacity onPress={this._doScan}>
+                <Text style={{color: 'white', width: 100, textAlign: 'right'}}>Scan</Text>
+            </TouchableOpacity>
+        )
+    }
+
+    _doScan = () => {
+        this.setState({
+            peripherals: {},
+            uiState: UiState.scanning
+        });
+        setTimeout(() => {
+            this.setState({uiState: UiState.idle})
+        }, 5000);
     }
 }
 
